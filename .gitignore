@@ -14,7 +14,7 @@ backend/build/
 backend/logs/
 backend/*.log
 
-# React Native (Mobile)
+# React Native (Mobile) - Modified to track important files
 mobile/node_modules/
 mobile/.expo/
 mobile/.expo-shared/
