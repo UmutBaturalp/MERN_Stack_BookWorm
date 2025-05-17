@@ -1,0 +1,71 @@
+# Node.js (Backend)
+backend/node_modules/
+backend/npm-debug.log
+backend/yarn-error.log
+backend/yarn-debug.log
+backend/.env
+backend/.env.local
+backend/.env.development.local
+backend/.env.test.local
+backend/.env.production.local
+backend/coverage/
+backend/dist/
+backend/build/
+backend/logs/
+backend/*.log
+
+# React Native (Mobile)
+mobile/node_modules/
+mobile/.expo/
+mobile/.expo-shared/
+mobile/dist/
+mobile/npm-debug.*
+mobile/yarn-error.log
+mobile/yarn-debug.log
+mobile/*.jks
+mobile/*.p8
+mobile/*.p12
+mobile/*.key
+mobile/*.mobileprovision
+mobile/*.orig.*
+mobile/web-build/
+mobile/.DS_Store
+mobile/.env
+mobile/.env.local
+mobile/.env.development.local
+mobile/.env.test.local
+mobile/.env.production.local
+
+# iOS
+mobile/ios/build/
+mobile/ios/Pods/
+mobile/ios/DerivedData/
+mobile/ios/.xcode.env.local
+mobile/ios/xcuserdata/
+
+# Android
+mobile/android/build/
+mobile/android/app/build/
+mobile/android/.gradle/
+mobile/android/captures/
+mobile/android/local.properties
+mobile/android/.idea/
+mobile/android/*.iml
+mobile/android/gradle/
+
+# General
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+.directory
+*~
+*.log
+.env
+
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
