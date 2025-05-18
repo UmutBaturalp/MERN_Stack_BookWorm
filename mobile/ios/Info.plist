@@ -1,0 +1,4 @@
+<key>NSPhotoLibraryUsageDescription</key>
+<string>BookWorm needs access to your photo library to select book cover images</string>
+<key>NSCameraUsageDescription</key>
+<string>BookWorm needs access to your camera to take book cover photos</string> 

@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
 } from 'react-native';
 import React, {useState} from 'react';
 import {useDispatch} from 'react-redux';
@@ -18,13 +19,40 @@ import {signupUser} from '../../redux/actions/authActions';
 
 const SignUp = ({navigation}) => {
   const dispatch = useDispatch();
-  const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignUp = () => {
-    dispatch(signupUser(fullName, email, password));
+  const handleSignUp = async () => {
+    if (!username || !email || !password) {
+      Alert.alert('Error', 'All fields are required');
+      return;
+    }
+
+    if (username.length < 3) {
+      Alert.alert('Error', 'Username must be at least 3 characters');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await dispatch(signupUser(username, email, password));
+      // Success is handled by Redux - navigation will happen automatically
+    } catch (error) {
+      Alert.alert(
+        'Error',
+        error.message || 'Registration failed. Please try again.',
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -45,17 +73,17 @@ const SignUp = ({navigation}) => {
 
           <View style={styles.formContainer}>
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Full Name</Text>
+              <Text style={styles.label}>Username</Text>
               <View style={styles.inputContainer}>
                 {
                   //icon
                 }
                 <TextInput
                   style={styles.input}
-                  placeholder="John Doe"
+                  placeholder="johndoe"
                   placeholderTextColor={COLORS.placeholderText}
-                  value={fullName}
-                  onChangeText={setFullName}
+                  value={username}
+                  onChangeText={setUsername}
                 />
               </View>
             </View>
@@ -103,9 +131,12 @@ const SignUp = ({navigation}) => {
             </View>
 
             <TouchableOpacity
-              style={styles.signUpButton}
-              onPress={handleSignUp}>
-              <Text style={styles.signUpButtonText}>Sign Up</Text>
+              style={[styles.signUpButton, isLoading && {opacity: 0.7}]}
+              onPress={handleSignUp}
+              disabled={isLoading}>
+              <Text style={styles.signUpButtonText}>
+                {isLoading ? 'Processing...' : 'Sign Up'}
+              </Text>
             </TouchableOpacity>
 
             <View style={styles.loginContainer}>

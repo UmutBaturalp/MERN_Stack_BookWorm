@@ -1,8 +1,6 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
+ * BookWorm App
+ * MERN Stack Mobile Uygulaması
  */
 
 import React from 'react';

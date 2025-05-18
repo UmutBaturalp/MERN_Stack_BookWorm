@@ -8,6 +8,12 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+  },
   header: {
     paddingVertical: windowHeight * 0.02,
     paddingHorizontal: windowWidth * 0.04,
@@ -51,6 +57,7 @@ export const styles = StyleSheet.create({
     height: windowWidth * 0.08,
     borderRadius: (windowWidth * 0.08) / 2,
     marginRight: windowWidth * 0.02,
+    backgroundColor: '#E1E1E1',
   },
   userName: {
     fontSize: windowWidth * 0.04,
@@ -62,6 +69,7 @@ export const styles = StyleSheet.create({
     height: windowHeight * 0.2,
     borderRadius: 8,
     marginBottom: windowHeight * 0.01,
+    backgroundColor: '#E1E1E1',
   },
   bookTitle: {
     fontSize: windowWidth * 0.05,
@@ -92,5 +100,61 @@ export const styles = StyleSheet.create({
     fontSize: windowWidth * 0.03,
     color: COLORS.textSecondary,
     alignSelf: 'flex-end',
+  },
+  loadingFooter: {
+    paddingVertical: windowHeight * 0.02,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // Empty state styles
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: windowWidth * 0.1,
+    backgroundColor: COLORS.white,
+    margin: windowWidth * 0.05,
+    borderRadius: 16,
+    paddingVertical: windowHeight * 0.05,
+    shadowColor: COLORS.black,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  emptyStateImage: {
+    width: windowWidth * 0.4,
+    height: windowWidth * 0.4,
+    marginBottom: windowHeight * 0.03,
+    tintColor: COLORS.primary,
+    opacity: 0.7,
+  },
+  emptyTitle: {
+    fontSize: windowWidth * 0.06,
+    fontWeight: 'bold',
+    color: COLORS.textDark,
+    marginBottom: windowHeight * 0.01,
+    textAlign: 'center',
+  },
+  emptyText: {
+    fontSize: windowWidth * 0.04,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: windowHeight * 0.03,
+    lineHeight: windowHeight * 0.025,
+  },
+  emptyRefreshButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: windowHeight * 0.015,
+    paddingHorizontal: windowWidth * 0.08,
+    borderRadius: 8,
+  },
+  emptyRefreshButtonText: {
+    color: COLORS.white,
+    fontSize: windowWidth * 0.045,
+    fontWeight: '600',
   },
 });

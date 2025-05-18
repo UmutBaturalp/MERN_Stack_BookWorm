@@ -1,118 +1,132 @@
 import {
-  Text,
-  View,
   SafeAreaView,
-  Image,
-  TouchableOpacity,
+  View,
+  Text,
   FlatList,
+  Alert,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
-import React from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import {styles} from './styles';
-import Icons from '../../assets/Icons';
+import COLORS from '../../config/colors';
 import {logoutUser} from '../../redux/actions/authActions';
+import {booksAPI} from '../../service/api';
+import {useFocusEffect} from '@react-navigation/native';
 
+// Import components
+import {
+  ProfileHeader,
+  RecommendationItem,
+  EmptyRecommendations,
+} from '../../components';
 
-// Mock data for user's recommendations
-const USER_RECOMMENDATIONS = [
-  {
-    id: '1',
-    title: 'The Hunger Games',
-    rating: 4,
-    description: 'A dystopian tale of survival, rebellion, and sacrifice.',
-    date: '3/9/2025',
-    image: Icons.book,
-  },
-  {
-    id: '2',
-    title: 'The Catcher in the Rye',
-    rating: 3,
-    description:
-      'A classic coming-of-age novel about teenage alienation and re...',
-    date: '3/9/2025',
-    image: Icons.book,
-  },
-  {
-    id: '3',
-    title: 'Sapiens',
-    rating: 5,
-    description:
-      'A thought-provoking exploration of human history and our speci...',
-    date: '3/9/2025',
-    image: Icons.book,
-  },
-];
-
-const RecommendationItem = ({item}) => {
-  return (
-    <View style={styles.recommendationItem}>
-      <Image source={item.image} style={styles.bookThumbnail} />
-      <View style={styles.bookInfo}>
-        <Text style={styles.bookTitle}>{item.title}</Text>
-        <View style={styles.ratingContainer}>
-          {Array(5)
-            .fill(0)
-            .map((_, index) => (
-              <Text
-                key={index}
-                style={
-                  index < item.rating ? styles.starFilled : styles.starEmpty
-                }>
-                ★
-              </Text>
-            ))}
-        </View>
-        <Text style={styles.bookDescription}>{item.description}</Text>
-        <Text style={styles.bookDate}>{item.date}</Text>
-      </View>
-      <TouchableOpacity style={styles.deleteButton}>
-        <Image source={Icons.add} style={styles.deleteIcon} />
-      </TouchableOpacity>
-    </View>
-  );
-};
-
-const Profile = () => {
+const Profile = ({navigation}) => {
   const dispatch = useDispatch();
   const {user} = useSelector(state => state.auth);
+  const [userBooks, setUserBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  console.log('----+++ user ', user);
+  // Debug user data when component mounts or user changes
+  useEffect(() => {
+    console.log(
+      'Profile screen - User from Redux:',
+      JSON.stringify(user, null, 2),
+    );
+  }, [user]);
+
+  const fetchUserBooks = async (refresh = false) => {
+    try {
+      if (refresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      const books = await booksAPI.getUserBooks();
+      setUserBooks(books);
+      console.log('User books loaded:', books.length);
+    } catch (error) {
+      console.error('Error fetching user books:', error);
+      Alert.alert('Error', 'Failed to load your recommendations');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // İlk yükleme
+  useEffect(() => {
+    fetchUserBooks();
+  }, []);
+
+  // Ekran her odaklandığında kullanıcı kitaplarını yenile
+  useFocusEffect(
+    useCallback(() => {
+      console.log('Profile screen focused, refreshing user books');
+      fetchUserBooks(true);
+      return () => {};
+    }, []),
+  );
 
   const handleLogout = () => {
     dispatch(logoutUser());
   };
 
+  const handleRefresh = () => {
+    fetchUserBooks(true);
+  };
+
+  const handleDeleteBook = async bookId => {
+    try {
+      await booksAPI.deleteBook(bookId);
+      setUserBooks(prevBooks => prevBooks.filter(book => book._id !== bookId));
+      Alert.alert('Success', 'Book recommendation deleted successfully');
+    } catch (error) {
+      console.error('Error deleting book:', error);
+      Alert.alert('Error', 'Failed to delete recommendation');
+    }
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.profileHeader}>
-        <View style={styles.userInfoContainer}>
-          <Image source={Icons.profile} style={styles.profileImage} />
-          <View>
-            <Text style={styles.userName}>{user?.name || 'John Doe'}</Text>
-            <Text style={styles.userEmail}>
-              {user?.email || 'john@gmail.com'}
-            </Text>
-            <Text style={styles.memberSince}>Member since 3/9/2025</Text>
-          </View>
-        </View>
-
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
-      </View>
+      <ProfileHeader user={user} onLogout={handleLogout} />
 
       <View style={styles.recommendationsContainer}>
         <View style={styles.recommendationsHeader}>
           <Text style={styles.recommendationsTitle}>Your Recommendations</Text>
           <Text style={styles.recommendationsCount}>
-            {USER_RECOMMENDATIONS.length} books
+            {userBooks.length} books
           </Text>
         </View>
 
-        <FlatList
-          data={USER_RECOMMENDATIONS}
-          renderItem={({item}) => <RecommendationItem item={item} />}
-          keyExtractor={item => item.id}
-          contentContainerStyle={styles.recommendationsList}
-        />
+        {userBooks.length > 0 ? (
+          <FlatList
+            data={userBooks}
+            renderItem={({item}) => (
+              <RecommendationItem item={item} onDelete={handleDeleteBook} />
+            )}
+            keyExtractor={item => item._id}
+            contentContainerStyle={styles.recommendationsList}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+              />
+            }
+          />
+        ) : (
+          <EmptyRecommendations navigation={navigation} />
+        )}
       </View>
     </SafeAreaView>
   );

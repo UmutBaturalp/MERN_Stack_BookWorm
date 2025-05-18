@@ -11,6 +11,20 @@ const Tab = createBottomTabNavigator();
 const {width: windowWidth, height: windowHeight} = Dimensions.get('window');
 
 const AppStack = () => {
+  // Tab ikonu oluşturmak için yardımcı fonksiyon
+  const renderTabIcon = (icon, focused) => (
+    <View style={styles.tabIconContainer}>
+      <Image
+        source={icon}
+        style={[
+          styles.tabIcon,
+          {tintColor: focused ? COLORS.primary : COLORS.textSecondary},
+        ]}
+        resizeMode="contain"
+      />
+    </View>
+  );
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -24,54 +38,21 @@ const AppStack = () => {
         name="Home"
         component={Home}
         options={{
-          tabBarIcon: ({focused}) => (
-            <View style={styles.tabIconContainer}>
-              <Image
-                source={Icons.home}
-                style={[
-                  styles.tabIcon,
-                  {tintColor: focused ? COLORS.primary : COLORS.textSecondary},
-                ]}
-                resizeMode="contain"
-              />
-            </View>
-          ),
+          tabBarIcon: ({focused}) => renderTabIcon(Icons.home, focused),
         }}
       />
       <Tab.Screen
         name="Create"
         component={Create}
         options={{
-          tabBarIcon: ({focused}) => (
-            <View style={styles.tabIconContainer}>
-              <Image
-                source={Icons.add}
-                style={[
-                  styles.tabIcon,
-                  {tintColor: focused ? COLORS.primary : COLORS.textSecondary},
-                ]}
-                resizeMode="contain"
-              />
-            </View>
-          ),
+          tabBarIcon: ({focused}) => renderTabIcon(Icons.add, focused),
         }}
       />
       <Tab.Screen
         name="Profile"
         component={Profile}
         options={{
-          tabBarIcon: ({focused}) => (
-            <View style={styles.tabIconContainer}>
-              <Image
-                source={Icons.profile}
-                style={[
-                  styles.tabIcon,
-                  {tintColor: focused ? COLORS.primary : COLORS.textSecondary},
-                ]}
-                resizeMode="contain"
-              />
-            </View>
-          ),
+          tabBarIcon: ({focused}) => renderTabIcon(Icons.profile, focused),
         }}
       />
     </Tab.Navigator>
@@ -97,4 +78,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export {AppStack};
+export default AppStack;

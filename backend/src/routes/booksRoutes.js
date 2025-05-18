@@ -6,27 +6,56 @@ import cloudinary from "./../lib/cloudinary.js";
 const router = express.Router();
 
 router.post("/", protectRoute, async (req, res) => {
+  console.log("post request received");
   try {
     const { title, caption, image, rating } = req.body;
+    console.log("Book data received:", {
+      title,
+      caption: caption?.length,
+      rating,
+    });
+    console.log("User ID:", req.user.id);
+
     if (!title || !caption || !image || !rating) {
+      console.log("Missing fields:", {
+        title: !title,
+        caption: !caption,
+        image: !image,
+        rating: !rating,
+      });
       return res.status(400).json({ message: "All fields are required" });
     }
 
+    console.log("Attempting to upload image to Cloudinary...");
     //upload the image to cloudinary
-    const uploadResponse = await cloudinary.uploader.upload(image);
-    const imageURL = uploadResponse.secure_url;
-    //save the book to the database
-    const newBook = await Book.create({
-      title,
-      caption,
-      image: imageURL,
-      rating,
-      user: req.user.id,
-    });
-    await newBook.save();
-    res.status(201).json(newBook);
+    try {
+      const uploadResponse = await cloudinary.uploader.upload(image);
+      console.log(
+        "Cloudinary upload successful:",
+        uploadResponse.secure_url.substring(0, 50) + "..."
+      );
+      const imageURL = uploadResponse.secure_url;
+
+      console.log("Creating book in database...");
+      //save the book to the database
+      const newBook = await Book.create({
+        title,
+        caption,
+        image: imageURL,
+        rating,
+        user: req.user.id,
+      });
+      await newBook.save();
+      console.log("Book saved successfully with ID:", newBook._id);
+      res.status(201).json(newBook);
+    } catch (cloudinaryError) {
+      console.error("Cloudinary upload error:", cloudinaryError);
+      res
+        .status(500)
+        .json({ message: "Image upload failed: " + cloudinaryError.message });
+    }
   } catch (error) {
-    console.log("Error creating book:", error);
+    console.error("Error creating book:", error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -88,9 +117,10 @@ router.delete("/:id", protectRoute, async (req, res) => {
 
 router.get("/user", protectRoute, async (req, res) => {
   try {
-    const books = await Book.find({ user: req.user.id }).sort({
-      createdAt: -1,
-    });
+    const books = await Book.find({ user: req.user.id })
+      .sort({ createdAt: -1 })
+      .populate("user", "username profileImage");
+
     res.status(200).json(books);
   } catch (error) {
     console.log("Error getting user's books:", error);

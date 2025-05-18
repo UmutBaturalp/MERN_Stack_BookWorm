@@ -1,86 +1,133 @@
 import {
-  Text,
-  View,
   SafeAreaView,
-  Image,
   FlatList,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
-import React from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {styles} from './styles';
-import Icons from '../../assets/Icons';
+import COLORS from '../../config/colors';
+import {booksAPI} from '../../service/api';
+import {useFocusEffect} from '@react-navigation/native';
 
+// Import components
+import {Header, BookItem, EmptyBooks} from '../../components';
 
-// Mock data for book recommendations
-const MOCK_RECOMMENDATIONS = [
-  {
-    id: '1',
-    title: 'The Hunger Games',
-    author: 'Suzanne Collins',
-    rating: 4,
-    description: 'A dystopian tale of survival, rebellion, and sacrifice.',
-    date: '3/9/2025',
-    image: Icons.book,
-  },
-  {
-    id: '2',
-    title: 'The Catcher in the Rye',
-    author: 'J.D. Salinger',
-    rating: 3,
-    description:
-      'A classic coming-of-age novel about teenage alienation and rebellion.',
-    date: '3/9/2025',
-    image: Icons.book,
-  },
-];
+const Home = ({navigation, route}) => {
+  const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-const BookItem = ({item}) => {
-  return (
-    <View style={styles.bookCard}>
-      <View style={styles.userInfoContainer}>
-        <Image source={Icons.profile} style={styles.userAvatar} />
-        <Text style={styles.userName}>John Doe</Text>
-      </View>
+  const fetchBooks = async (pageNum = 1, refresh = false) => {
+    try {
+      if (refresh) {
+        setRefreshing(true);
+      } else if (pageNum === 1) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
 
-      <Image source={item.image} style={styles.bookImage} resizeMode="cover" />
+      const response = await booksAPI.getAllBooks(pageNum);
 
-      <Text style={styles.bookTitle}>{item.title}</Text>
+      if (pageNum === 1 || refresh) {
+        setBooks(response.books);
+      } else {
+        setBooks(prevBooks => [...prevBooks, ...response.books]);
+      }
 
-      <View style={styles.ratingContainer}>
-        {Array(5)
-          .fill(0)
-          .map((_, index) => (
-            <Text
-              key={index}
-              style={
-                index < item.rating ? styles.starFilled : styles.starEmpty
-              }>
-              ★
-            </Text>
-          ))}
-      </View>
+      setHasMore(response.books.length > 0 && pageNum < response.totalPages);
+    } catch (error) {
+      console.error('Error fetching books:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+      setLoadingMore(false);
+    }
+  };
 
-      <Text style={styles.bookDescription}>{item.description}</Text>
-      <Text style={styles.bookDate}>{item.date}</Text>
-    </View>
+  // Create sayfasından refresh parametresi geldiyse kitapları yeniden yükle
+  useEffect(() => {
+    if (route.params?.refresh) {
+      console.log('Refreshing home content after book creation');
+      setPage(1);
+      fetchBooks(1, true);
+    }
+  }, [route.params?.refresh, route.params?.timestamp]);
+
+  // İlk yükleme
+  useEffect(() => {
+    fetchBooks();
+  }, []);
+
+  // Ekran her odaklandığında kitapları yenile
+  useFocusEffect(
+    useCallback(() => {
+      console.log('Home screen focused, refreshing content');
+      setPage(1);
+      fetchBooks(1, true);
+      return () => {};
+    }, []),
   );
-};
 
-const Home = () => {
+  const handleRefresh = () => {
+    setPage(1);
+    fetchBooks(1, true);
+  };
+
+  const handleLoadMore = () => {
+    if (hasMore && !loadingMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchBooks(nextPage);
+    }
+  };
+
+  const renderFooter = () => {
+    if (!loadingMore) return null;
+    return (
+      <ActivityIndicator
+        size="small"
+        color={COLORS.primary}
+        style={styles.loadingFooter}
+      />
+    );
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.appName}>BookWorm</Text>
-        <Text style={styles.tagline}>
-          Discover great reads from the community
-        </Text>
-      </View>
-
-      <FlatList
-        data={MOCK_RECOMMENDATIONS}
-        renderItem={({item}) => <BookItem item={item} />}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContainer}
+      <Header
+        title="BookWorm"
+        subtitle="Discover great reads from the community"
       />
+
+      {books.length > 0 ? (
+        <FlatList
+          data={books}
+          renderItem={({item}) => <BookItem item={item} />}
+          keyExtractor={item => item._id || item.id}
+          contentContainerStyle={styles.listContainer}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
+        />
+      ) : (
+        <EmptyBooks onRefresh={handleRefresh} />
+      )}
     </SafeAreaView>
   );
 };

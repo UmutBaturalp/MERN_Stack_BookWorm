@@ -8,11 +8,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
 } from 'react-native';
 import React, {useState} from 'react';
 import {useDispatch} from 'react-redux';
 import {styles} from './styles';
 import Icons from '../../assets/Icons';
+import COLORS from '../../config/colors';
 import {loginUser} from '../../redux/actions/authActions';
 
 const Login = ({navigation}) => {
@@ -20,9 +22,26 @@ const Login = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
-    dispatch(loginUser(email, password));
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'All fields are required');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await dispatch(loginUser(email, password));
+      // Success is handled by Redux - navigation will happen automatically
+    } catch (error) {
+      Alert.alert(
+        'Error',
+        error.message || 'Login failed. Please check your credentials.',
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -49,7 +68,7 @@ const Login = ({navigation}) => {
                 <TextInput
                   style={styles.input}
                   placeholder="Enter your email"
-                  placeholderTextColor="#A0A0A0"
+                  placeholderTextColor={COLORS.placeholderText}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   value={email}
@@ -67,7 +86,7 @@ const Login = ({navigation}) => {
                 <TextInput
                   style={styles.input}
                   placeholder="Enter your password"
-                  placeholderTextColor="#A0A0A0"
+                  placeholderTextColor={COLORS.placeholderText}
                   secureTextEntry={!showPassword}
                   value={password}
                   onChangeText={setPassword}
@@ -82,8 +101,13 @@ const Login = ({navigation}) => {
               </View>
             </View>
 
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-              <Text style={styles.loginButtonText}>Login</Text>
+            <TouchableOpacity
+              style={[styles.loginButton, isLoading && {opacity: 0.7}]}
+              onPress={handleLogin}
+              disabled={isLoading}>
+              <Text style={styles.loginButtonText}>
+                {isLoading ? 'Processing...' : 'Login'}
+              </Text>
             </TouchableOpacity>
 
             <View style={styles.signupContainer}>

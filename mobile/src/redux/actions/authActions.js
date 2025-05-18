@@ -6,52 +6,106 @@ import {
   signupStart,
   signupSuccess,
   signupFailure,
+  updateUserProfile,
 } from '../slices/authSlice';
+import {authAPI} from '../../service/api';
+import {saveUserData} from '../../utils/storageUtils';
+import {ensureValidImageUrl} from '../../utils/imageHelper';
 
-// Mock function for login - Replace with actual API calls
+// Login user with API service
 export const loginUser = (email, password) => async dispatch => {
   try {
     dispatch(loginStart());
 
-    // Simulate API call
-    // In a real app, this would be a fetch or axios call to your backend
-    setTimeout(() => {
-      // Mock successful login
-      const user = {
-        id: '1',
-        name: 'John Doe',
-        email: email,
-      };
+    const response = await authAPI.login(email, password);
 
-      dispatch(loginSuccess(user));
-    }, 1000);
+    // Transform response to match our Redux state format
+    const user = {
+      id: response.user.id,
+      username: response.user.username,
+      email: response.user.email,
+      profileImage: ensureValidImageUrl(response.user.profileImage),
+      createdAt: response.user.createdAt || formatDate(new Date()),
+    };
+
+    console.log('Login successful, updating Redux state with user data:', user);
+    dispatch(loginSuccess(user));
+    return user;
   } catch (error) {
     dispatch(loginFailure(error.message));
+    throw error;
   }
 };
 
-// Mock function for signup - Replace with actual API calls
-export const signupUser = (fullName, email, password) => async dispatch => {
+// Register new user with API service
+export const signupUser = (username, email, password) => async dispatch => {
   try {
     dispatch(signupStart());
 
-    // Simulate API call
-    // In a real app, this would be a fetch or axios call to your backend
-    setTimeout(() => {
-      // Mock successful signup
-      const user = {
-        id: '1',
-        name: fullName,
-        email: email,
-      };
+    const response = await authAPI.register(username, email, password);
 
-      dispatch(signupSuccess(user));
-    }, 1000);
+    // Transform response to match our Redux state format
+    const user = {
+      id: response.user.id,
+      username: response.user.username,
+      email: response.user.email,
+      profileImage: ensureValidImageUrl(response.user.profileImage),
+      createdAt: response.user.createdAt || formatDate(new Date()),
+    };
+
+    console.log(
+      'Registration successful, updating Redux state with user data:',
+      user,
+    );
+    dispatch(signupSuccess(user));
+    return user;
   } catch (error) {
     dispatch(signupFailure(error.message));
+    throw error;
   }
 };
 
-export const logoutUser = () => dispatch => {
-  dispatch(logout());
+// Logout user
+export const logoutUser = () => async dispatch => {
+  try {
+    console.log('Logging out user');
+    await authAPI.logout();
+    dispatch(logout());
+    return true;
+  } catch (error) {
+    console.error('Logout error:', error);
+    return false;
+  }
+};
+
+// Update user profile
+export const updateUserProfileData = userData => async dispatch => {
+  try {
+    // Here you would call an API to update the user profile
+    // For now, we'll just update the local state
+    console.log('Updating user profile data:', userData);
+
+    // Make sure the profile image is valid
+    if (userData.profileImage) {
+      userData.profileImage = ensureValidImageUrl(userData.profileImage);
+    }
+
+    dispatch(updateUserProfile(userData));
+
+    // Also update the user data in AsyncStorage
+    await saveUserData({...userData});
+
+    return true;
+  } catch (error) {
+    console.error('Update profile error:', error);
+    return false;
+  }
+};
+
+// Tarihi "MM/DD/YYYY" formatında döndüren yardımcı fonksiyon
+const formatDate = date => {
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const year = date.getFullYear();
+  return `${month}/${day}/${year}`;
 };
