@@ -46,10 +46,21 @@ const SignUp = ({navigation}) => {
       await dispatch(signupUser(username, email, password));
       // Success is handled by Redux - navigation will happen automatically
     } catch (error) {
-      Alert.alert(
-        'Error',
-        error.message || 'Registration failed. Please try again.',
-      );
+      // Handle specific error messages with user-friendly alerts
+      let errorTitle = 'Registration Error';
+      let errorMessage =
+        error.message || 'Registration failed. Please try again.';
+
+      // Map known error messages to more user-friendly ones
+      if (error.message === 'email already exists') {
+        errorMessage =
+          'This email is already registered. Please use a different email or try logging in.';
+      } else if (error.message === 'username already exists') {
+        errorMessage =
+          'This username is already taken. Please choose a different username.';
+      }
+
+      Alert.alert(errorTitle, errorMessage, [{text: 'OK'}], {cancelable: true});
     } finally {
       setIsLoading(false);
     }

@@ -35,10 +35,20 @@ const Login = ({navigation}) => {
       await dispatch(loginUser(email, password));
       // Success is handled by Redux - navigation will happen automatically
     } catch (error) {
-      Alert.alert(
-        'Error',
-        error.message || 'Login failed. Please check your credentials.',
-      );
+      // Handle specific error messages with user-friendly alerts
+      let errorTitle = 'Login Error';
+      let errorMessage =
+        error.message || 'Login failed. Please check your credentials.';
+
+      // Map known error messages to more user-friendly ones
+      if (error.message === 'User not found') {
+        errorMessage =
+          'No account found with this email address. Please check your email or sign up.';
+      } else if (error.message === 'Invalid credentials') {
+        errorMessage = 'Incorrect password. Please try again.';
+      }
+
+      Alert.alert(errorTitle, errorMessage, [{text: 'OK'}], {cancelable: true});
     } finally {
       setIsLoading(false);
     }

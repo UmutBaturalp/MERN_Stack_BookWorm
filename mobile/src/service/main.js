@@ -90,7 +90,10 @@ export const apiPost = async (url, body, includeAuth = true) => {
       (error.message === 'User not found' ||
         error.message === 'Invalid credentials' ||
         error.message === 'email already exists' ||
-        error.message === 'username already exists');
+        error.message === 'username already exists' ||
+        error.message === 'All fields are required' ||
+        error.message === 'Password must be at least 6 characters' ||
+        error.message === 'Username must be at least 3 characters');
 
     if (!isExpectedAuthError) {
       console.error(`POST isteği başarısız (${url}):`, error);

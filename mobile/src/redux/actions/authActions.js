@@ -32,6 +32,13 @@ export const loginUser = (email, password) => async dispatch => {
     dispatch(loginSuccess(user));
     return user;
   } catch (error) {
+    // Don't log expected auth errors to avoid red console errors
+    const isExpectedAuthError =
+      error.message === 'User not found' ||
+      error.message === 'Invalid credentials' ||
+      error.message === 'All fields are required';
+
+    // Update Redux state with the error
     dispatch(loginFailure(error.message));
     throw error;
   }
@@ -60,7 +67,17 @@ export const signupUser = (username, email, password) => async dispatch => {
     dispatch(signupSuccess(user));
     return user;
   } catch (error) {
+    // Don't log expected auth errors to avoid red console errors
+    const isExpectedAuthError =
+      error.message === 'email already exists' ||
+      error.message === 'username already exists' ||
+      error.message === 'All fields are required' ||
+      error.message === 'Password must be at least 6 characters' ||
+      error.message === 'Username must be at least 3 characters';
+
+    // We still need to update the redux state
     dispatch(signupFailure(error.message));
+
     throw error;
   }
 };

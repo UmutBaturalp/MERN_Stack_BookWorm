@@ -29,7 +29,15 @@ export const register = async (username, email, password) => {
 
     return response;
   } catch (error) {
-    console.error('Kayıt hatası:', error);
+    // Don't log expected auth errors to console to avoid red error messages
+    const isExpectedAuthError =
+      error.message === 'email already exists' ||
+      error.message === 'username already exists';
+
+    if (!isExpectedAuthError) {
+      console.error('Kayıt hatası:', error);
+    }
+
     throw error;
   }
 };
