@@ -10,14 +10,22 @@ import {
   ScrollView,
 } from 'react-native';
 import React, {useState} from 'react';
+import {useDispatch} from 'react-redux';
 import {styles} from './styles';
 import Icons from '../../assets/Icons';
 import COLORS from '../../config/colors';
+import {signupUser} from '../../redux/actions/authActions';
+
 const SignUp = ({navigation}) => {
+  const dispatch = useDispatch();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleSignUp = () => {
+    dispatch(signupUser(fullName, email, password));
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -94,7 +102,9 @@ const SignUp = ({navigation}) => {
               </View>
             </View>
 
-            <TouchableOpacity style={styles.signUpButton}>
+            <TouchableOpacity
+              style={styles.signUpButton}
+              onPress={handleSignUp}>
               <Text style={styles.signUpButtonText}>Sign Up</Text>
             </TouchableOpacity>
 

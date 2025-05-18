@@ -10,8 +10,19 @@
     "test": "jest"
   },
   "dependencies": {
+    "@react-native-masked-view/masked-view": "^0.3.2",
+    "@react-navigation/bottom-tabs": "^7.3.13",
+    "@react-navigation/native": "^7.1.9",
+    "@react-navigation/stack": "^7.3.2",
+    "@reduxjs/toolkit": "^2.8.2",
     "react": "18.3.1",
-    "react-native": "0.76.0"
+    "react-native": "0.76.0",
+    "react-native-gesture-handler": "^2.25.0",
+    "react-native-reanimated": "^3.17.5",
+    "react-native-safe-area-context": "^5.4.0",
+    "react-native-screens": "^4.10.0",
+    "react-redux": "^9.2.0",
+    "redux": "^5.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

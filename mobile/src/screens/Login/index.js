@@ -10,12 +10,20 @@ import {
   ScrollView,
 } from 'react-native';
 import React, {useState} from 'react';
+import {useDispatch} from 'react-redux';
 import {styles} from './styles';
 import Icons from '../../assets/Icons';
+import {loginUser} from '../../redux/actions/authActions';
+
 const Login = ({navigation}) => {
+  const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleLogin = () => {
+    dispatch(loginUser(email, password));
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -74,13 +82,13 @@ const Login = ({navigation}) => {
               </View>
             </View>
 
-            <TouchableOpacity style={styles.loginButton}>
+            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
               <Text style={styles.loginButtonText}>Login</Text>
             </TouchableOpacity>
 
             <View style={styles.signupContainer}>
               <Text style={styles.signupText}>Don't have an account?</Text>
-              <TouchableOpacity onPress={() => navigation?.navigate('Signup')}>
+              <TouchableOpacity onPress={() => navigation?.navigate('SignUp')}>
                 <Text style={styles.signupLink}>Sign Up</Text>
               </TouchableOpacity>
             </View>
